@@ -1,0 +1,114 @@
+---	
+- name: Create VPC
+  cloudformation:
+    stack_name: petclinic-vpc
+    state: present
+    region: "us-east-1"
+    template: "roles/{{ role_name }}/files/eks-vpc.yaml"
+  register: vpc_stack
+  
+- name: Get VPC Info
+  cloudformation_info:
+    stack_name: petclinic-vpc
+    region: "us-east-1"
+  register: vpc_stack_info
+
+- name: Set VPC Info
+  set_fact:
+    vpc_info:  "{{vpc_stack_info.cloudformation['petclinic-vpc'].stack_outputs}}"
+    
+- name: Create ec2-key pair
+  ec2_key:
+    name: petclinic
+    region: "us-east-1"
+  register: ec2_key_result
+  
+- name: Save private key
+  copy: content="{{ ec2_key_result.key.private_key }}" dest="./petclinic.pem" mode=0600
+  when: ec2_key_result.changed
+    
+- name: Set Vars
+  set_fact:
+    eksClusterName: petclinic-eks
+    region: us-east-1
+    a_stack_az: us-east-1a
+    b_stack_az: us-east-1b
+    a_stack_pub_subnet: "{{ vpc_info.PublicSubnet1Id }}"
+    b_stack_pub_subnet: "{{ vpc_info.PublicSubnet2Id }}"
+    a_stack_priv_subnet: "{{ vpc_info.PrivateSubnet1Id }}"
+    b_stack_priv_subnet: "{{ vpc_info.PrivateSubnet2Id }}"
+    vpc_id: "{{ vpc_info.VPCId }}"
+    
+- name: Generate eks-cluster.yaml
+  template:
+    src: "roles/{{ role_name }}/files/eks-cluster.yaml"
+    dest: /tmp/eks-cluster.yaml
+
+# populate a clusters_exist list with names of clusters TAB "\t"
+- name: "Getting existing clusters list"
+  command: "aws --region {{ region }} eks list-clusters --query [clusters] --output text"
+  register: clusters_exist
+  
+- debug:
+    msg: "{{ clusters_exist.stdout }}"
+   
+# create a list from clusters_exist
+- set_fact:
+    found_clusters_list: "{{ clusters_exist.stdout.split('\t') }}"
+    
+- name: "Settting eksctl action to either Create or Update"
+  set_fact:
+    eksctl_action: "{{ 'create' if (eksClusterName not in found_clusters_list) else 'update' }}"
+    
+- name: "Running eksctl eksctl_action {{ eksctl_action | upper }} cluster with name {{ eksClusterName | upper }}"
+  command: "eksctl {{ eksctl_action }} cluster -f /tmp/eks-cluster.yaml"
+  
+- name: Add Kubectl configuration
+  shell: "aws eks update-kubeconfig --name {{ eksClusterName }} --region {{ region }}"
+  ignore_errors: yes
+  
+- name: Get OIDC Info - Issuer URL
+  shell: "aws eks describe-cluster --name {{ eksClusterName }} --region {{ region }} --query cluster.identity.oidc.issuer --output text"
+  register: oidc_issuer_url_output
+  
+- name: Get OIDC Info - Issuer Host Path
+  shell: "echo {{ oidc_issuer_url_output.stdout }} | cut -f 3- -d'/' "
+  register: oidc_issuer_host_path_output
+
+- name: Get OIDC Info - AWS Account Id
+  shell: "aws sts get-caller-identity --query Account --output text"
+  register: aws_account_id_output
+
+- name: Enable OIDC Provider
+  shell: "eksctl utils associate-iam-oidc-provider --name {{ eksClusterName }} --region {{ region }} --approve"
+  ignore_errors: yes
+  
+- name: Set OIDC Provider Info
+  set_fact:
+    oidc_issuer_provider_arn: "arn:aws:iam::{{ aws_account_id_output.stdout }}:oidc-provider/{{ oidc_issuer_host_path_output.stdout }}"
+    oidc_issuer_provider_host_path: "{{ oidc_issuer_host_path_output.stdout }}"
+
+- name: Output OIDC Provider Info
+  debug:
+    msg: "oidc info: {{ oidc_issuer_provider_arn }}, oidc host path: {{ oidc_issuer_provider_host_path }} "
+    
+- name: Configure CLuster autoScaler
+  template:
+    src: "roles/{{ role_name }}/templates/cluster-autoscaler.yaml"
+    dest: /tmp/cluster-autoscaler.yaml
+
+- name: Install Cluster autoscaler for capacity
+  shell: "kubectl apply -f /tmp/cluster-autoscaler.yaml"
+    
+- name: Install petclinic helm chart
+  shell: "helm upgrade --install petclinic ./deploy/spring-petclinic"
+
+- name: check deployment status
+  shell: "kubectl rollout status deployment.apps/petclinic"
+  
+- name: export PETCLINIC_URL
+  shell: "kubectl get svc -n default petclinic -o jsonpath=\"{.status.loadBalancer.ingress[*].hostname}\""
+  register: PETCLINIC_URL
+
+- debug:
+    msg: "{{ PETCLINIC_URL.stdout }}"

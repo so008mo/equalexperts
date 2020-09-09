@@ -1,0 +1,50 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: "{{ eksClusterName }}"
+  region: "{{ region }}"
+  version: "1.16"
+
+vpc:
+  id: "{{ vpc_id }}"
+  subnets:
+    public:
+      {{ a_stack_az }}:
+        id: "{{ a_stack_pub_subnet }}"
+      {{ b_stack_az }}:
+        id: "{{ b_stack_pub_subnet }}"
+    private:
+      {{ a_stack_az }}:
+        id: "{{ a_stack_priv_subnet }}"
+      {{ b_stack_az }}:
+        id: "{{ b_stack_priv_subnet }}"
+
+nodeGroups:
+- name: "{{ eksClusterName }}-ng-az1"
+  instanceType: t2.medium
+  availabilityZones: ["{{ a_stack_az }}"]
+  desiredCapacity: 1
+  minSize: 1
+  maxSize: 4
+  privateNetworking: true
+  labels:
+    nodegroup-type: petclinic
+  ssh:
+    publicKeyName: petclinic
+  iam:
+    withAddonPolicies:
+      externalDNS: true
+      autoScaler: true
+      efs: true
+      ebs: true
+      cloudWatch: true
+      certManager: true
+      albIngress: true
+  kubeletExtraConfig:
+    evictionHard:
+      memory.available:  "200Mi"
+      nodefs.available: "10%"
+  tags:
+    media-wiki-cluster-autoscaler-enabled: "true"
+    CrowdStrike_Exception: "EKS"  
