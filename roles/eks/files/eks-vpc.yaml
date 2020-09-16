@@ -13,7 +13,7 @@ Parameters:
   PublicSubnet1AZ:
     Description: The AZ for Public Subnet 1
     Type: AWS::EC2::AvailabilityZone::Name
-    Default: us-east-1a
+    Default: eu-central-1a
   PublicCidrBlock2:
     Description: The IP address range for Public Subnet 2
     Type: String
@@ -21,7 +21,7 @@ Parameters:
   PublicSubnet2AZ:
     Description: The AZ for Public Subnet 2
     Type: AWS::EC2::AvailabilityZone::Name
-    Default: us-east-1b
+    Default: eu-central-1b
   PrivateCidrBlock1:
     Description: The IP address range for Private Subnet 1
     Type: String
@@ -29,7 +29,7 @@ Parameters:
   PrivateSubnet1AZ:
     Description: The AZ for Private Subnet 1
     Type: AWS::EC2::AvailabilityZone::Name
-    Default: us-east-1a
+    Default: eu-central-1a
   PrivateCidrBlock2:
     Description: The IP address range for Private Subnet 2
     Type: String
@@ -37,7 +37,7 @@ Parameters:
   PrivateSubnet2AZ:
     Description: The AZ Private Subnet 2
     Type: AWS::EC2::AvailabilityZone::Name
-    Default: us-east-1b
+    Default: eu-central-1b
 Resources:
   VPC:
     Type: AWS::EC2::VPC

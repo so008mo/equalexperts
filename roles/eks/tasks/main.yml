@@ -3,14 +3,18 @@
   cloudformation:
     stack_name: petclinic-vpc
     state: present
-    region: "us-east-1"
+    region: "{{ region }}"
+    PublicSubnet1AZ: "{{ region }}-1a"
+    PublicSubnet2AZ: "{{ region }}-1b"
+    PrivateSubnet1AZ: "{{ region }}-1a"
+    PrivateSubnet2AZ: "{{ region }}-1b"
     template: "roles/{{ role_name }}/files/eks-vpc.yaml"
   register: vpc_stack
   
 - name: Get VPC Info
   cloudformation_info:
     stack_name: petclinic-vpc
-    region: "us-east-1"
+    region: "{{ region }}"
   register: vpc_stack_info
 
 - name: Set VPC Info
@@ -20,7 +24,7 @@
 - name: Create ec2-key pair
   ec2_key:
     name: petclinic
-    region: "us-east-1"
+    region: "{{ region }}"
   register: ec2_key_result
   
 - name: Save private key
@@ -30,9 +34,9 @@
 - name: Set Vars
   set_fact:
     eksClusterName: petclinic-eks
-    region: us-east-1
-    a_stack_az: us-east-1a
-    b_stack_az: us-east-1b
+    region: "{{ region }}"
+    a_stack_az: "{{ region }}-1a"
+    b_stack_az: "{{ region }}-1b"
     a_stack_pub_subnet: "{{ vpc_info.PublicSubnet1Id }}"
     b_stack_pub_subnet: "{{ vpc_info.PublicSubnet2Id }}"
     a_stack_priv_subnet: "{{ vpc_info.PrivateSubnet1Id }}"
