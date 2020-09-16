@@ -107,10 +107,10 @@
   shell: "helm upgrade petclinic --install so008mo/spring --set service.type=LoadBalancer --set image.repository=arsenal14h/petclinic --set image.tag=spring-k8s-1"
 
 - name: check deployment status
-  shell: "kubectl rollout status deployment.apps/petclinic"
+  shell: "kubectl rollout status deployment.apps/petclinic-spring"
   
 - name: export PETCLINIC_URL
-  shell: "kubectl get svc -n default petclinic -o jsonpath=\"{.status.loadBalancer.ingress[*].hostname}\""
+  shell: "kubectl get svc -n default petclinic-spring -o jsonpath=\"{.status.loadBalancer.ingress[*].hostname}\""
   register: PETCLINIC_URL
 
 - debug:
