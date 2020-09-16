@@ -100,13 +100,11 @@
 - name: Install Cluster autoscaler for capacity
   shell: "kubectl apply -f /tmp/cluster-autoscaler.yaml"
 
-- name: Configure helm package for petclinic
-  copy:
-    src: "roles/{{ role_name }}/templates/petclinic-0.1.0.tgz"
-    dest: /tmp/petclinic-0.1.0.tgz
-    
-- name: Install petclinic helm chart
-  shell: "helm upgrade petclinic --install /tmp/petclinic-0.1.0.tgz"
+- name: Add petclinic helm chart
+  shell: "helm repo add so008mo http://tech.paulcz.net/helm-chart-spring/repo"
+
+- name: Install petclinic helm chart with new image
+  shell: "helm upgrade petclinic --install so008mo/spring --set service.type=LoadBalancer --set image.repository=arsenal14h/petclinic --set image.tag=spring-k8s-1"
 
 - name: check deployment status
   shell: "kubectl rollout status deployment.apps/petclinic"

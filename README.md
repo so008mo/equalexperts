@@ -28,7 +28,6 @@ Components that will be deployed
 
 3. Cluster Autoscaler to handle any capacity requests
 
-4. Helm package for spring-petclinic  # Code for the same can be found in https://github.com/so008mo/spring-petclinic.git
 
 Additional comments.
 
