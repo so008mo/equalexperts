@@ -10,8 +10,9 @@
       PublicSubnet2AZ: "{{ region }}-1b"
       PrivateSubnet1AZ: "{{ region }}-1a"
       PrivateSubnet2AZ: "{{ region }}-1b"
-    ignore_errors: true
+  ignore_errors: true
   register: vpc_stack
+
   
 - name: Get VPC Info
   cloudformation_info:
