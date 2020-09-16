@@ -14,7 +14,7 @@ pipeline {
       steps {
         sh 'git clone https://github.com/so008mo/equalexperts.git'
 	sh 'cp -r . /tmp/deploy'
-	sh 'cd /tmp/deploy && AWS_ACCESS_KEY_ID=$KEY_ID AWS_SECRET_ACCESS_KEY=$ACCESS_KEY ansible-playbook main.yml'
+	sh 'cd /tmp/deploy/equalexperts && AWS_ACCESS_KEY_ID=$KEY_ID AWS_SECRET_ACCESS_KEY=$ACCESS_KEY ansible-playbook main.yml'
       }
     }
   }
