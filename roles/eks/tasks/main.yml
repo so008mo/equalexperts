@@ -4,11 +4,12 @@
     stack_name: petclinic-vpc
     state: present
     region: "{{ region }}"
-    PublicSubnet1AZ: "{{ region }}-1a"
-    PublicSubnet2AZ: "{{ region }}-1b"
-    PrivateSubnet1AZ: "{{ region }}-1a"
-    PrivateSubnet2AZ: "{{ region }}-1b"
     template: "roles/{{ role_name }}/files/eks-vpc.yaml"
+    template_parameters:
+      PublicSubnet1AZ: "{{ region }}-1a"
+      PublicSubnet2AZ: "{{ region }}-1b"
+      PrivateSubnet1AZ: "{{ region }}-1a"
+      PrivateSubnet2AZ: "{{ region }}-1b"
   register: vpc_stack
   
 - name: Get VPC Info
