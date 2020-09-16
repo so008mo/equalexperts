@@ -6,10 +6,10 @@
     region: "{{ region }}"
     template: "roles/{{ role_name }}/files/eks-vpc.yaml"
     template_parameters:
-      PublicSubnet1AZ: "{{ region }}-1a"
-      PublicSubnet2AZ: "{{ region }}-1b"
-      PrivateSubnet1AZ: "{{ region }}-1a"
-      PrivateSubnet2AZ: "{{ region }}-1b"
+      PublicSubnet1AZ: "{{ region }}a"
+      PublicSubnet2AZ: "{{ region }}b"
+      PrivateSubnet1AZ: "{{ region }}a"
+      PrivateSubnet2AZ: "{{ region }}b"
   ignore_errors: true
   register: vpc_stack
 
@@ -38,8 +38,8 @@
   set_fact:
     eksClusterName: petclinic-eks
     region: "{{ region }}"
-    a_stack_az: "{{ region }}-1a"
-    b_stack_az: "{{ region }}-1b"
+    a_stack_az: "{{ region }}a"
+    b_stack_az: "{{ region }}b"
     a_stack_pub_subnet: "{{ vpc_info.PublicSubnet1Id }}"
     b_stack_pub_subnet: "{{ vpc_info.PublicSubnet2Id }}"
     a_stack_priv_subnet: "{{ vpc_info.PrivateSubnet1Id }}"
