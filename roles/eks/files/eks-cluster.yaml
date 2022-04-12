@@ -4,7 +4,7 @@ kind: ClusterConfig
 metadata:
   name: "{{ eksClusterName }}"
   region: "{{ region }}"
-  version: "1.16"
+  version: "1.20"
 
 vpc:
   id: "{{ vpc_id }}"
