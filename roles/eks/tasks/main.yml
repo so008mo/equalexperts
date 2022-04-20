@@ -107,6 +107,9 @@
 - name: Install Cluster autoscaler for capacity
   shell: "kubectl apply -f /tmp/cluster-autoscaler.yaml"
 
+- name: Install metrics-server
+  shell: "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+
 - name: Add petclinic helm chart
   shell: "helm repo add so008mo http://tech.paulcz.net/helm-chart-spring/repo"
 
@@ -122,3 +125,9 @@
 
 - debug:
     msg: "{{ PETCLINIC_URL.stdout }}"
+
+- name: Patch Deployment
+  shell: "kubectl patch deployment petclinic-spring -p='{"spec":{"template":{"spec":{"containers":[{"name":"spring","resources":{"requests":{"cpu":"100m"}}}]}}}}'"
+
+- name: Install HPA
+  shell: "kubectl autoscale deployment petclinic-spring --cpu-percent=50 --min=2 --max=10"
