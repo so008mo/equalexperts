@@ -47,4 +47,5 @@ nodeGroups:
       nodefs.available: "10%"
   tags:
     media-wiki-cluster-autoscaler-enabled: "true"
-    CrowdStrike_Exception: "EKS"  
+    CrowdStrike_Exception: "EKS"
+    Capstone_project: "True"  
